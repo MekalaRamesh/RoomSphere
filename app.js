@@ -75,7 +75,7 @@ async function main() {
 const store =  MongoStore.create({
   mongoUrl :dbUrl,
   crypto :{
-    secret:"mysupersecretcode",
+    secret:process.env.SECRET,
   },
   touchAfter: 24 *3600,
 });
@@ -87,7 +87,7 @@ store.on("error",()=>{
 
 const sessionOptions = {
   store,
-  secret :"mysupersecretcode",
+  secret : process.env.SECRET,
   resave : false,
   saveUninitialized : true,
   cookie :{
@@ -116,7 +116,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req,res,next) =>{
  res.locals.sucess = req.flash("sucess");
  res.locals.error = req.flash("error");
- res.locals.currUser = req.user;
+ res.locals.currUser = req.user || null;
  next();
 
 });
