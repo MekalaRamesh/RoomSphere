@@ -21,6 +21,9 @@ const reviews = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
 const session = require("express-session");
+const MongoStore = require('connect-mongo');
+
+
 const cookie = require("express-session/session/cookie.js");
 const flash = require("connect-flash");
 
@@ -50,7 +53,9 @@ app.use(express.static(path.join(__dirname ,"public")));
 app.use(express.urlencoded({extended :true}));
 
 
-const mongoUrl = "mongodb://127.0.0.1:27017/wander"
+// const mongoUrl = "mongodb://127.0.0.1:27017/wander"
+
+const dbUrl = process.env.ATLASDB_URL;
 
 main()
   .then( ()=>{
@@ -61,13 +66,27 @@ main()
   })
   
 
+
 async function main() {
-    await mongoose.connect(mongoUrl);
+    await mongoose.connect(dbUrl);
     
 }
 
+const store =  MongoStore.create({
+  mongoUrl :dbUrl,
+  crypto :{
+    secret:"mysupersecretcode",
+  },
+  touchAfter: 24 *3600,
+});
+
+
+store.on("error",()=>{
+  console.log("error in mongo session store",err);
+});
 
 const sessionOptions = {
+  store,
   secret :"mysupersecretcode",
   resave : false,
   saveUninitialized : true,
@@ -78,9 +97,9 @@ const sessionOptions = {
   },
 };
 
-app.get("/",(req, res) =>{
-  res.send("root route");
-})
+// app.get("/",(req, res) =>{
+//   res.send("root route");
+// })
 
 app.use(session(sessionOptions));
 app.use(flash());
